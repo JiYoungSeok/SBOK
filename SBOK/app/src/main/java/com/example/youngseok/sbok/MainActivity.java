@@ -114,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
         fragment = null;
 
@@ -135,5 +134,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+
+    public void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(bluetoothReceiver);
+        unregisterReceiver(gpsReceiver);
     }
 }

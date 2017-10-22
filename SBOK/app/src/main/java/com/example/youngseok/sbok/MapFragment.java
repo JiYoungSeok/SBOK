@@ -15,8 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.app.Fragment;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.skp.Tmap.TMapData;
@@ -36,8 +37,8 @@ public class MapFragment extends Fragment implements TMapGpsManager.onLocationCh
 
     private LocationManager locationManager;
 
-    private LinearLayout ll_tMap;
-    private Button bt_auto;
+    private FrameLayout ll_tMap;
+    private ImageButton bt_auto;
     private TextView tv_curAddr;
     private ImageView iv_curWeather;
     private ImageView iv_bluetooth, iv_gps;
@@ -104,10 +105,10 @@ public class MapFragment extends Fragment implements TMapGpsManager.onLocationCh
                 if(!isRun) {
                     isRun = true;
                     startSubThreads();
-                    bt_auto.setText("OFF");
+                    bt_auto.setImageResource(R.drawable.switch_on);
                 } else {
                     isRun = false;
-                    bt_auto.setText("ON");
+                    bt_auto.setImageResource(R.drawable.switch_off);
                 }
             };
         });
