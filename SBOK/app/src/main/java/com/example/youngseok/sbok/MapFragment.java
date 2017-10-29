@@ -21,12 +21,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.skp.Tmap.TMapData;
-import com.skp.Tmap.TMapGpsManager;
 import com.skp.Tmap.TMapMarkerItem;
 import com.skp.Tmap.TMapPoint;
 import com.skp.Tmap.TMapView;
 
-public class MapFragment extends Fragment implements TMapGpsManager.onLocationChangedCallback {
+public class MapFragment extends Fragment {
+//     implements TMapGpsManager.onLocationChangedCallback
 
     private static String mApiKey = "e3ec92b4-d0be-396c-a3f6-1df217dec94a";
     private static TMapView tMapView;
@@ -70,9 +70,17 @@ public class MapFragment extends Fragment implements TMapGpsManager.onLocationCh
         }
     };
 
-    @Override
-    public void onLocationChange(Location location) {
-        tMapView.setLocationPoint(location.getLongitude(), location.getLatitude());
+    private void startLocationService () {
+        locationManager = (LocationManager) thisContext.getSystemService(Context.LOCATION_SERVICE);
+
+        long minTime = 1000 * 5;
+        float minDistance = 10;
+
+        if (ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, mLocationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, mLocationListener);
     }
 
     public MapFragment() {
@@ -123,19 +131,6 @@ public class MapFragment extends Fragment implements TMapGpsManager.onLocationCh
         tMapView.setSKPMapApiKey(mApiKey);
         tMapView.setCenterPoint(initLon, initLat);
         tMapView.setZoomLevel(12);
-    }
-
-    private void startLocationService () {
-        locationManager = (LocationManager) thisContext.getSystemService(Context.LOCATION_SERVICE);
-
-        long minTime = 1000 * 5;
-        float minDistance = 10;
-
-        if (ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, mLocationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, mLocationListener);
     }
 
     private void drawCurMarker() {

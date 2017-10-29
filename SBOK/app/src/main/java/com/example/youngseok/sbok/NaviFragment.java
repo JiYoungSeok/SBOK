@@ -37,8 +37,8 @@ public class NaviFragment extends Fragment {
     private String srcAddr;
     private String dstAddr;
 
-    private double sLatitude, sLongitude;
-    private double dLatitude, dLongitude;
+    private double startLat, startLon;
+    private double dstLat, dstLon;
 
     private TextView tv_src;
     private EditText et_dst;
@@ -49,6 +49,39 @@ public class NaviFragment extends Fragment {
     private Button bt_dst;
     private Button bt_findPath;
 
+    private final LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            startLat = location.getLatitude();
+            startLon = location.getLongitude();
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+        }
+
+        @Override
+        public void onProviderEnabled(String s) {
+        }
+
+        @Override
+        public void onProviderDisabled(String s) {
+        }
+    };
+
+    private void startLocationService() {
+        locationManager = (LocationManager) thisContext.getSystemService(Context.LOCATION_SERVICE);
+
+        long minTime = 1000 * 5;
+        float minDistance = 10;
+
+        if (ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, mLocationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, mLocationListener);
+    }
+
     public NaviFragment() {
         //Basic Construction
     }
@@ -58,14 +91,14 @@ public class NaviFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_navi, container, false);
         thisContext = container.getContext();
 
-        tv_src = (TextView) view.findViewById(R.id.tv_src);
-        et_dst = (EditText) view.findViewById(R.id.et_dst);
+        tv_src = view.findViewById(R.id.tv_src);
+        et_dst = view.findViewById(R.id.et_dst);
 
-        lv_poi = (ListView) view.findViewById(R.id.lv_poi);
+        lv_poi = view.findViewById(R.id.lv_poi);
 
-        bt_src = (Button) view.findViewById(R.id.bt_src);
-        bt_dst = (Button) view.findViewById(R.id.bt_dst);
-        bt_findPath = (Button) view.findViewById(R.id.bt_findPath);
+        bt_src = view.findViewById(R.id.bt_src);
+        bt_dst = view.findViewById(R.id.bt_dst);
+        bt_findPath = view.findViewById(R.id.bt_findPath);
 
         tMapData = new TMapData();
 
@@ -74,8 +107,8 @@ public class NaviFragment extends Fragment {
             public void onClick(View v) {
                 startLocationService();
 
-                if(sLatitude != 0.0 || sLongitude != 0.0) {
-                    tMapData.convertGpsToAddress(sLatitude, sLongitude, new TMapData.ConvertGPSToAddressListenerCallback() {
+                if(startLat != 0.0 || startLon != 0.0) {
+                    tMapData.convertGpsToAddress(startLat, startLon, new TMapData.ConvertGPSToAddressListenerCallback() {
                         @Override
                         public void onConvertToGPSToAddress(String s) {
                             srcAddr = s;
@@ -98,7 +131,10 @@ public class NaviFragment extends Fragment {
         bt_findPath.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dstLat = dstPoint.getLatitude();
+                dstLon = dstPoint.getLongitude();
 
+                Toast.makeText(thisContext, dstLat + " " + dstLon, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -128,37 +164,4 @@ public class NaviFragment extends Fragment {
             }
         });
     }
-
-    private void startLocationService() {
-        locationManager = (LocationManager) thisContext.getSystemService(Context.LOCATION_SERVICE);
-
-        long minTime = 1000 * 5;
-        float minDistance = 10;
-
-        if (ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, mLocationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, mLocationListener);
-    }
-
-    private final LocationListener mLocationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            sLatitude = location.getLatitude();
-            sLongitude = location.getLongitude();
-        }
-
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle) {
-        }
-
-        @Override
-        public void onProviderEnabled(String s) {
-        }
-
-        @Override
-        public void onProviderDisabled(String s) {
-        }
-    };
 }

@@ -121,8 +121,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             fragment = new MapFragment();
         } else if (id == R.id.nav_navi) {
             fragment = new NaviFragment();
-        } else if (id == R.id.nav_extra1) {
-
+        } else if (id == R.id.nav_info) {
+            fragment = new InfoFragment();
         } else if (id == R.id.nav_extra2) {
 
         }
