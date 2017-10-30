@@ -9,15 +9,16 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.skp.Tmap.TMapPOIItem;
+import com.skp.Tmap.TMapPoint;
 
 import java.util.ArrayList;
 
-public class POIBaseAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
-    private ArrayList<TMapPOIItem> mData = null;
+public class RecentBaseAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
+
+    private ArrayList<RecentDestination> mData = null;
     private LayoutInflater mLayoutInflater = null;
 
-    POIBaseAdapter(Context context, ArrayList<TMapPOIItem> data){
+    RecentBaseAdapter(Context context, ArrayList<RecentDestination> data) {
         Context mContext = context;
         mData = data;
         mLayoutInflater = LayoutInflater.from(mContext);
@@ -25,11 +26,13 @@ public class POIBaseAdapter extends BaseAdapter implements AdapterView.OnItemCli
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        TMapPOIItem tMapPOIItem = (TMapPOIItem) parent.getItemAtPosition(position);
+        RecentDestination recentDestination = (RecentDestination) parent.getItemAtPosition(position);
+
+        TMapPoint tMapPoint = new TMapPoint(recentDestination.getLatitude(), recentDestination.getLongitude());
 
         EditText et_Dst = view.getRootView().findViewById(R.id.et_dst);
-        et_Dst.setText(tMapPOIItem.getPOIName());
-        NaviFragment.dstPoint = tMapPOIItem.getPOIPoint();
+        et_Dst.setText(recentDestination.getName());
+        NaviFragment.dstPoint = tMapPoint;
     }
 
     @Override
@@ -50,20 +53,17 @@ public class POIBaseAdapter extends BaseAdapter implements AdapterView.OnItemCli
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = mLayoutInflater.inflate(R.layout.list_view_layout, null);
+            convertView = mLayoutInflater.inflate(R.layout.list_view_recent_layout, null);
         }
 
-        TextView tv_Name = convertView.findViewById(R.id.tv_name);
-        TextView tv_Addr = convertView.findViewById(R.id.tv_addr);
+        TextView tv_RecentName = convertView.findViewById(R.id.tv_recentName);
+        TextView tv_RecentAddr = convertView.findViewById(R.id.tv_recentAddr);
 
-        TMapPOIItem poiItem = mData.get(position);
+        RecentDestination recentDestination = mData.get(position);
 
-        tv_Name.setText(poiItem.getPOIName());
-        tv_Addr.setText(poiItem.getPOIAddress().replace("null", ""));
+        tv_RecentName.setText(recentDestination.getName());
+        tv_RecentAddr.setText(recentDestination.getAddr());
 
-        NaviFragment.destinationAddr = poiItem.getPOIAddress().replace("null", "");
-
-        NaviFragment.dstPoint = poiItem.getPOIPoint();
         return convertView;
     }
 }

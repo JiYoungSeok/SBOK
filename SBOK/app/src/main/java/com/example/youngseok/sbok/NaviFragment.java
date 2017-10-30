@@ -11,7 +11,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -28,6 +27,10 @@ public class NaviFragment extends Fragment {
 
     private static TMapData tMapData = null;
     public static TMapPoint dstPoint = null;
+    public static String destinationAddr = null;
+
+    private ArrayList <RecentDestination> recentDestinationList = new ArrayList<>();
+    private RecentDBManager recentDBManager = null;
 
     private Context thisContext;
 
@@ -40,7 +43,7 @@ public class NaviFragment extends Fragment {
     private double startLat, startLon;
     private double dstLat, dstLon;
 
-    private TextView tv_src;
+    private TextView tv_src, tv_classification;
     private EditText et_dst;
 
     private ListView lv_poi;
@@ -91,7 +94,10 @@ public class NaviFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_navi, container, false);
         thisContext = container.getContext();
 
+        recentDBManager = new RecentDBManager(thisContext, "recent.db", null, 1);
+
         tv_src = view.findViewById(R.id.tv_src);
+        tv_classification = view.findViewById(R.id.tv_classification);
         et_dst = view.findViewById(R.id.et_dst);
 
         lv_poi = view.findViewById(R.id.lv_poi);
@@ -101,6 +107,11 @@ public class NaviFragment extends Fragment {
         bt_findPath = view.findViewById(R.id.bt_findPath);
 
         tMapData = new TMapData();
+        makeList();
+
+        RecentBaseAdapter recentAdapter = new RecentBaseAdapter(thisContext, recentDestinationList);
+        lv_poi.setAdapter(recentAdapter);
+        lv_poi.setOnItemClickListener(recentAdapter);
 
         bt_src.setOnClickListener(new Button.OnClickListener() {
             @Override
@@ -124,6 +135,7 @@ public class NaviFragment extends Fragment {
         bt_dst.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
+                tv_classification.setText("검색 결과");
                 dstAddr = et_dst.getText().toString();
                 getPOI(dstAddr);
             }
@@ -131,10 +143,16 @@ public class NaviFragment extends Fragment {
         bt_findPath.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dstLat = dstPoint.getLatitude();
-                dstLon = dstPoint.getLongitude();
+                if(et_dst.getText().toString().equals("")) {
 
-                Toast.makeText(thisContext, dstLat + " " + dstLon, Toast.LENGTH_SHORT).show();
+                } else {
+                    dstLat = dstPoint.getLatitude();
+                    dstLon = dstPoint.getLongitude();
+
+                    recentDBManager.insert(dstPoint.getLatitude(), dstPoint.getLongitude(), et_dst.getText().toString(), destinationAddr);
+
+                    Toast.makeText(thisContext, dstLat + " " + dstLon, Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -156,12 +174,17 @@ public class NaviFragment extends Fragment {
                             @Override
                             public void run() {
                                 lv_poi.setAdapter(poiAdapter);
-                                lv_poi.setOnItemClickListener((AdapterView.OnItemClickListener) poiAdapter);
+                                lv_poi.setOnItemClickListener(poiAdapter);
                             }
                         });
                     }
                 }).start();
             }
         });
+    }
+
+    public void makeList() {
+        recentDestinationList.clear();
+        recentDBManager.showList(recentDestinationList);
     }
 }
