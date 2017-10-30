@@ -33,9 +33,15 @@ public class RecentDBManager extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void delete (String name, String address) {
+//    public void delete (String name, String address) {
+//        SQLiteDatabase db = getWritableDatabase();
+//        db.execSQL("DELETE FROM recent WHERE name = '" + name + "' AND address = '" + address + "'");
+//        db.close();
+//    }
+
+    public void delete () {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM recent WHERE name = '" + name + "' AND address = '" + address + "'");
+        db.execSQL("DELETE FROM recent");
         db.close();
     }
 

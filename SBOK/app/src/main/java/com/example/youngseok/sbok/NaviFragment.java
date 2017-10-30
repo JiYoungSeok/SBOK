@@ -95,6 +95,7 @@ public class NaviFragment extends Fragment {
         thisContext = container.getContext();
 
         recentDBManager = new RecentDBManager(thisContext, "recent.db", null, 1);
+//        recentDBManager.delete();
 
         tv_src = view.findViewById(R.id.tv_src);
         tv_classification = view.findViewById(R.id.tv_classification);
