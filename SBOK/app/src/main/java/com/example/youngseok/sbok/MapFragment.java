@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.skp.Tmap.TMapData;
 import com.skp.Tmap.TMapMarkerItem;
 import com.skp.Tmap.TMapPoint;
+import com.skp.Tmap.TMapPolyLine;
 import com.skp.Tmap.TMapView;
 
 public class MapFragment extends Fragment {
@@ -31,6 +32,8 @@ public class MapFragment extends Fragment {
     private static String mApiKey = "e3ec92b4-d0be-396c-a3f6-1df217dec94a";
     private static TMapView tMapView;
     private static TMapData tMapData;
+    private static TMapPoint startPoint;
+    private static TMapPoint endPoint;
     private static Weather weather = new Weather();
 
     private Context thisContext;
@@ -41,7 +44,6 @@ public class MapFragment extends Fragment {
     private ImageButton bt_auto;
     private TextView tv_curAddr;
     private ImageView iv_curWeather;
-    private ImageView iv_bluetooth, iv_gps;
 
     private double curLat;
     private double curLon;
@@ -76,7 +78,8 @@ public class MapFragment extends Fragment {
         long minTime = 1000 * 5;
         float minDistance = 10;
 
-        if (ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(thisContext, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, mLocationListener);
@@ -96,13 +99,11 @@ public class MapFragment extends Fragment {
         bt_auto = view.findViewById(R.id.bt_auto);
         tv_curAddr = view.findViewById(R.id.tv_curAddr);
         iv_curWeather = view.findViewById(R.id.iv_curWeather);
-        iv_bluetooth = view.findViewById(R.id.iv_bluetooth);
-        iv_gps = view.findViewById(R.id.iv_gps);
-
-        detectChangeThreads();
 
         tMapView = new TMapView(thisContext);
         tMapData = new TMapData();
+
+        drawPolyLine();
 
         initMap();
         ll_tMap.addView(tMapView);
@@ -124,9 +125,27 @@ public class MapFragment extends Fragment {
         return view;
     }
 
+    private void drawPolyLine() {
+        if(NaviFragment.startLat != 0.0 && NaviFragment.startLon != 0.0
+                && NaviFragment.dstLat != 0.0 && NaviFragment.dstLon != 0.0) {
+            startPoint = new TMapPoint(NaviFragment.startLat, NaviFragment.startLon);
+            endPoint = new TMapPoint(NaviFragment.dstLat, NaviFragment.dstLon);
+
+            tMapData.findPathData(startPoint, endPoint, new TMapData.FindPathDataListenerCallback() {
+                @Override
+                public void onFindPathData(TMapPolyLine tMapPolyLine) {
+                    tMapPolyLine.setLineWidth(12);
+                    tMapView.addTMapPath(tMapPolyLine);
+                }
+            });
+        }
+    }
+
     private void initMap() {
-        double initLat = 37.6018;
-        double initLon = 127.0407;
+        double initLat, initLon;
+
+        initLat = 37.6018;
+        initLon = 127.0407;
 
         tMapView.setSKPMapApiKey(mApiKey);
         tMapView.setCenterPoint(initLon, initLat);
@@ -166,26 +185,6 @@ public class MapFragment extends Fragment {
                     try {
                         weather.webData(curLat, curLon);
                         Thread.sleep(2000);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
-    }
-
-    public void detectChangeThreads() {
-        new Thread() {
-            public void run() {
-                while (true) {
-                    try {
-                        if(MainActivity.isBluetoothOn) iv_bluetooth.setImageResource(R.drawable.bluetooth_on);
-                        else iv_bluetooth.setImageResource(R.drawable.bluetooth_off);
-
-                        if(MainActivity.isGpsOn) iv_gps.setImageResource(R.drawable.gps_on);
-                        else iv_gps.setImageResource(R.drawable.gps_off);
-
-                        Thread.sleep(300);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

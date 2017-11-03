@@ -16,10 +16,9 @@ public class RecentDBManager extends SQLiteOpenHelper {
     @Override
     public void onCreate (SQLiteDatabase db) {
         db.execSQL("CREATE TABLE recent " +
-                "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "(name TEXT PRIMARY KEY, " +
                 "latitude REAL, " +
                 "longitude REAL, " +
-                "name TEXT, " +
                 "address TEXT);");
     }
 
@@ -27,19 +26,13 @@ public class RecentDBManager extends SQLiteOpenHelper {
     public void onUpgrade (SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public void insert(double latitude, double longitude, String name, String address) {
+    public void insert(String name, double latitude, double longitude, String address) {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("INSERT INTO recent VALUES (NULL, " + latitude + ", " + longitude +  ", '" + name + "', '" + address + "');");
+        db.execSQL("INSERT INTO recent VALUES ('" + name + "', " + latitude + ", " + longitude + ", '" + address + "');");
         db.close();
     }
 
-//    public void delete (String name, String address) {
-//        SQLiteDatabase db = getWritableDatabase();
-//        db.execSQL("DELETE FROM recent WHERE name = '" + name + "' AND address = '" + address + "'");
-//        db.close();
-//    }
-
-    public void delete () {
+    public void delete() {
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("DELETE FROM recent");
         db.close();
@@ -50,9 +43,9 @@ public class RecentDBManager extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery("SELECT * FROM recent", null);
 
         while (cursor.moveToNext()) {
-            double latitude = cursor.getInt(cursor.getColumnIndex("latitude"));
-            double longitude = cursor.getInt(cursor.getColumnIndex("longitude"));
             String name = cursor.getString(cursor.getColumnIndex("name"));
+            double latitude = cursor.getDouble(cursor.getColumnIndex("latitude"));
+            double longitude = cursor.getDouble(cursor.getColumnIndex("longitude"));
             String address = cursor.getString(cursor.getColumnIndex("address"));
 
             RecentDestination recentDestination = new RecentDestination(latitude, longitude, name, address);

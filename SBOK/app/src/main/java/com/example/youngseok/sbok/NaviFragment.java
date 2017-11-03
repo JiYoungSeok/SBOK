@@ -1,18 +1,20 @@
 package com.example.youngseok.sbok;
 
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,16 +42,16 @@ public class NaviFragment extends Fragment {
     private String srcAddr;
     private String dstAddr;
 
-    private double startLat, startLon;
-    private double dstLat, dstLon;
+    public static double startLat, startLon;
+    public static double dstLat, dstLon;
 
     private TextView tv_src, tv_classification;
     private EditText et_dst;
 
     private ListView lv_poi;
 
-    private Button bt_src;
-    private Button bt_dst;
+    private ImageButton bt_src;
+    private ImageButton bt_dst;
     private Button bt_findPath;
 
     private final LocationListener mLocationListener = new LocationListener() {
@@ -150,9 +152,16 @@ public class NaviFragment extends Fragment {
                     dstLat = dstPoint.getLatitude();
                     dstLon = dstPoint.getLongitude();
 
-                    recentDBManager.insert(dstPoint.getLatitude(), dstPoint.getLongitude(), et_dst.getText().toString(), destinationAddr);
+                    try {
+                        recentDBManager.insert(et_dst.getText().toString(), dstPoint.getLatitude(), dstPoint.getLongitude(), destinationAddr);
+                    } catch(Exception e) {
+                        Log.d("DB Error", "Key value is already inserted");
+                    }
 
-                    Toast.makeText(thisContext, dstLat + " " + dstLon, Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(thisContext, dstLat + " " + dstLon, Toast.LENGTH_SHORT).show();
+
+                    Fragment fragment = new MapFragment();
+                    getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, fragment).commit();
                 }
             }
         });

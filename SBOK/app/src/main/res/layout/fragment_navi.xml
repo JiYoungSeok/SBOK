@@ -13,21 +13,28 @@
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:gravity="center_horizontal|center_vertical"
+            android:textSize="18dp"
+            android:textColor="#000000"
+            android:textStyle="bold"
             android:text="출발지 : "/>
 
         <TextView
             android:id="@+id/tv_src"
-            android:layout_width="match_parent"
+            android:layout_width="380dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_marginRight="20dp"
+            android:textSize="15dp"
             android:gravity="center_horizontal|center_vertical" />
 
-        <Button
+        <ImageButton
             android:id="@+id/bt_src"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:text="현재 위치" />
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="10dp"
+            android:background="@android:color/holo_green_light"
+            android:src="@drawable/my_location"/>
 
     </LinearLayout>
 
@@ -41,20 +48,26 @@
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:gravity="center_horizontal|center_vertical"
+            android:textSize="18dp"
+            android:textColor="#000000"
+            android:textStyle="bold"
             android:text="목적지 : "/>
 
         <EditText
             android:id="@+id/et_dst"
-            android:layout_width="match_parent"
+            android:layout_width="380dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textSize="15dp"
+            android:layout_marginRight="20dp"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/bt_dst"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:text="검  색" />
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginRight="10dp"
+            android:background="@android:color/holo_green_light"
+            android:src="@drawable/search" />
 
     </LinearLayout>
 
@@ -97,7 +110,11 @@
             android:id="@+id/bt_findPath"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="경로 안내 시작" />
+            android:background="@android:color/holo_green_light"
+            android:text="경로 안내 시작"
+            android:textSize="18dp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"/>
     </LinearLayout>
 
 </LinearLayout>
