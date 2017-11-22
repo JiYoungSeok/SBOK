@@ -32,24 +32,16 @@ public class InfoFragment extends Fragment {
     private LocationManager locationManager;
 
     private SunAltitude sunAltitude;
+    private SunSet sunSet;
 
-    private TextView tv_XZ;
-    private TextView tv_YZ;
-    private TextView tv_date;
-    private TextView tv_latitude;
-    private TextView tv_longitude;
-    private TextView tv_azimuth09;
-    private TextView tv_altitude09;
-    private TextView tv_azimuth12;
-    private TextView tv_altitude12;
-    private TextView tv_azimuth15;
-    private TextView tv_altitude15;
-    private TextView tv_azimuth18;
-    private TextView tv_altitude18;
-    private TextView tv_altitudeMeridian;
+    private TextView tv_XZ, tv_YZ, tv_date, tv_time;
+    private TextView tv_latitude, tv_longitude;
+    private TextView tv_altitude09, tv_altitude12, tv_altitude15, tv_altitude18, tv_altitude;
+    private TextView tv_sunRise, tv_sunSet;
 
     private double latitude, longitude;
     private int year, month, date, convertDate;
+    private int hour, min, sec, convertTime;
 
     public InfoFragment() {
         // Required empty public constructor
@@ -67,6 +59,7 @@ public class InfoFragment extends Fragment {
         mAccLis = new AccelometerListener();
 
         sunAltitude = new SunAltitude();
+        sunSet = new SunSet();
 
         Calendar today;
         today = Calendar.getInstance();
@@ -74,28 +67,29 @@ public class InfoFragment extends Fragment {
         month = today.get(Calendar.MONTH);
         date = today.get(Calendar.DAY_OF_MONTH);
 
+        hour = today.get(Calendar.HOUR_OF_DAY);
+        min = today.get(Calendar.MINUTE);
+        sec = today.get(Calendar.SECOND);
+
         convertDate = year * 10000 + (month + 1) * 100 + date;
+        convertTime = hour * 10000 + min * 100 + sec;
 
         tv_XZ = view.findViewById(R.id.tv_XZ);
         tv_YZ = view.findViewById(R.id.tv_YZ);
         tv_date = view.findViewById(R.id.tv_date);
+        tv_time = view.findViewById(R.id.tv_time);
 
         tv_latitude = view.findViewById(R.id.tv_latitude);
         tv_longitude = view.findViewById(R.id.tv_longitude);
 
-        tv_azimuth09 = view.findViewById(R.id.tv_azimuth09);
         tv_altitude09 = view.findViewById(R.id.tv_altitude09);
-
-        tv_azimuth12 = view.findViewById(R.id.tv_azimuth12);
         tv_altitude12 = view.findViewById(R.id.tv_altitude12);
-
-        tv_azimuth15 = view.findViewById(R.id.tv_azimuth15);
         tv_altitude15 = view.findViewById(R.id.tv_altitude15);
-
-        tv_azimuth18 = view.findViewById(R.id.tv_azimuth18);
         tv_altitude18 = view.findViewById(R.id.tv_altitude18);
+        tv_altitude = view.findViewById(R.id.tv_altitude);
 
-        tv_altitudeMeridian = view.findViewById(R.id.tv_altitudeMeridian);
+        tv_sunRise = view.findViewById(R.id.tv_sunRise);
+        tv_sunSet = view.findViewById(R.id.tv_sunSet);
 
         view.findViewById(R.id.bt_start).setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -113,6 +107,16 @@ public class InfoFragment extends Fragment {
                     }
                 }.start();
 
+                new Thread() {
+                    public void run() {
+                        try {
+                            sunSet.getInfo(latitude, longitude, convertDate);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }.start();
+
                 switch (event.getAction()){
                     case MotionEvent.ACTION_DOWN:
                         mSensorManager.registerListener(mAccLis, mAccelometerSensor, SensorManager.SENSOR_DELAY_UI);
@@ -125,6 +129,7 @@ public class InfoFragment extends Fragment {
                 }
 
                 tv_date.setText("날짜 : " + Integer.toString(convertDate));
+                tv_time.setText("시간 : " + Integer.toString(convertTime));
 
                 if(latitude != 0.0 && longitude != 0.0) {
                     tv_latitude.setText("위도 : " + Double.toString(latitude));
@@ -139,12 +144,13 @@ public class InfoFragment extends Fragment {
                 tv_altitude15.setText("15시고도 : " + sunAltitude.getAltitude15());
                 tv_altitude18.setText("18시고도 : " + sunAltitude.getAltitude18());
 
-                tv_azimuth09.setText("9시방위각 : " + sunAltitude.getAzimuth09());
-                tv_azimuth12.setText("12시방위각 : " + sunAltitude.getAzimuth12());
-                tv_azimuth15.setText("15시방위각 : " + sunAltitude.getAzimuth15());
-                tv_azimuth18.setText("18시방위각 : " + sunAltitude.getAzimuth18());
+                int sunSetTime = Integer.parseInt(sunSet.getSunSet());
+                int sunRiseTime = Integer.parseInt(sunSet.getSunRise());
 
-                tv_altitudeMeridian.setText("남중고도 : " + sunAltitude.getAltitudeMeridian());
+                if(sunSetTime != 0 && sunRiseTime != 0) tv_altitude.setText("현재고도 : " + sunAltitude.calcAltitude(sunRiseTime, sunSetTime, convertTime));
+
+                tv_sunRise.setText("일출시간 : " + sunSet.getSunRise());
+                tv_sunSet.setText("일몰시간 : " + sunSet.getSunSet());
 
                 return false;
             }

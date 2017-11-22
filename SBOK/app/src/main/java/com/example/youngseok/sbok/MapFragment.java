@@ -45,12 +45,12 @@ public class MapFragment extends Fragment {
     private TextView tv_curAddr;
     private ImageView iv_curWeather;
 
-    private double curLat;
-    private double curLon;
+    public static double curLat;
+    public static double curLon;
 
-    private String curAddr;
+    public static String curAddr;
 
-    private boolean isRun = false;
+    private boolean isRun = true;
 
     private final LocationListener mLocationListener = new LocationListener() {
         @Override
@@ -107,6 +107,7 @@ public class MapFragment extends Fragment {
 
         initMap();
         ll_tMap.addView(tMapView);
+        startSubThreads();
 
         bt_auto.setOnClickListener(new Button.OnClickListener() {
             @Override
@@ -123,6 +124,18 @@ public class MapFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        isRun = false;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        isRun = false;
     }
 
     private void drawPolyLine() {

@@ -71,7 +71,7 @@
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/border"
-            android:src="@drawable/switch_off" />
+            android:src="@drawable/switch_on" />
 
     </FrameLayout>
 

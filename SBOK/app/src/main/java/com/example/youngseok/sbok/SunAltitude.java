@@ -8,11 +8,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class SunAltitude {
-    private String apiKey = "plYFpPp6rK%2FSi2MUsTfBgHyofM8ZWmwUPGtuXtYtBhFeAoxxLQq%2FTR4NhxIcVUZBeTtVJL2S%2Bn58XZ1ARyp5Yw%3D%3D";
+    private String apiKey = "zEXz1laEFGakic3NTzJMvTamHZKkwVFqQGSV5p7cvQra00bq2cWvX4rAC3c7WNH3mNxCdOlMqrcm%2BN1Zlu6lhw%3D%3D";
 
     private String altitude09, altitude12, altitude15, altitude18;
-    private String azimuth09, azimuth12, azimuth15, azimuth18;
-    private String altitudeMeridian;
 
     private String urlAddress;
     private String protocol = "GET";
@@ -24,13 +22,6 @@ public class SunAltitude {
     public String getAltitude12() { return altitude12; }
     public String getAltitude15() { return altitude15; }
     public String getAltitude18() { return altitude18; }
-
-    public String getAzimuth09() { return azimuth09; }
-    public String getAzimuth12() { return azimuth12; }
-    public String getAzimuth15() { return azimuth15; }
-    public String getAzimuth18() { return azimuth18; }
-
-    public String getAltitudeMeridian() { return altitudeMeridian; }
 
     public void getAltitudeInfo(int date, double latitude, double longitude) throws Exception {
         if (date == 0 || latitude == 0.0 || longitude == 0.0) return;
@@ -53,51 +44,78 @@ public class SunAltitude {
         Log.d("RESPONSE MESSAGE : ", line);
 
         int startIndex = line.indexOf("<altitude_09>");
-        int endIndex = line.indexOf("</altitude_09>");
-        altitude09 = line.substring(startIndex + 13, endIndex);
+        altitude09 = line.substring(startIndex + 13, startIndex + 15);
 
         startIndex = line.indexOf("<altitude_12>");
-        endIndex = line.indexOf("</altitude_12>");
-        altitude12 = line.substring(startIndex + 13, endIndex);
+        altitude12 = line.substring(startIndex + 13, startIndex + 15);
 
         startIndex = line.indexOf("<altitude_15>");
-        endIndex = line.indexOf("</altitude_15>");
-        altitude15 = line.substring(startIndex + 13, endIndex);
+        altitude15 = line.substring(startIndex + 13, startIndex + 15);
 
         startIndex = line.indexOf("<altitude_18>");
-        endIndex = line.indexOf("</altitude_18>");
-        altitude18 = line.substring(startIndex + 13, endIndex);
+        altitude18 = line.substring(startIndex + 13, startIndex + 15);
 
-        startIndex = line.indexOf("<azimuth_09>");
-        endIndex = line.indexOf("</azimuth_09>");
-        azimuth09 = line.substring(startIndex + 12, endIndex);
 
-        startIndex = line.indexOf("<azimuth_12>");
-        endIndex = line.indexOf("</azimuth_12>");
-        azimuth12 = line.substring(startIndex + 12, endIndex);
-
-        startIndex = line.indexOf("<azimuth_15>");
-        endIndex = line.indexOf("</azimuth_15>");
-        azimuth15 = line.substring(startIndex + 12, endIndex);
-
-        startIndex = line.indexOf("<azimuth_18>");
-        endIndex = line.indexOf("</azimuth_18>");
-        azimuth18 = line.substring(startIndex + 12, endIndex);
-
-        startIndex = line.indexOf("<altitudeMeridian>");
-        endIndex = line.indexOf("</altitudeMeridian>");
-        altitudeMeridian = line.substring(startIndex + 18, endIndex);
 
         Log.d("ALTITUDE09 : ", altitude09);
         Log.d("ALTITUDE12 : ", altitude12);
         Log.d("ALTITUDE15 : ", altitude15);
         Log.d("ALTITUDE18 : ", altitude18);
+    }
 
-        Log.d("AZIMUTH09 : ", azimuth09);
-        Log.d("AZIMUTH12 : ", azimuth12);
-        Log.d("AZIMUTH15 : ", azimuth15);
-        Log.d("AZIMUTH18 : ", azimuth18);
+    public int calcAltitude(int sunRise, int sunSet, int curTime) {
+        int section = 0;
+        int altitude = 0;
+        double temp;
+        boolean isWinter;
 
-        Log.d("ALTITUDE_MERIDIAN : ", altitudeMeridian);
+        if(sunSet > 180000) isWinter = false;
+        else isWinter = true;
+
+        if(sunRise <= curTime && curTime < 90000) section = 1;
+        else if(90000 <= curTime && curTime < 120000) section = 2;
+        else if(120000 <= curTime && curTime < 150000) section = 3;
+        else if(150000 <= curTime && curTime < sunSet && isWinter) section = 4;
+        else if(150000 <= curTime && curTime < 180000 && !isWinter) section = 4;
+        else if(180000 <= curTime && curTime < sunSet && !isWinter) section = 5;
+
+        Log.d("CALCULATE", curTime + " " + sunSet + " " + section + " " + isWinter);
+
+        switch(section) {
+            case 0:
+                break;
+
+            case 1:
+                temp = Math.abs(Double.parseDouble(altitude09) / (90000 - sunRise));
+                altitude = (int) (temp * (curTime - sunRise));
+                break;
+
+            case 2:
+                temp = Math.abs((Double.parseDouble(altitude12) - Integer.parseInt(altitude09)) / 30000);
+                altitude = (int) (temp * (curTime - 90000));
+                break;
+
+            case 3:
+                temp = Math.abs((Double.parseDouble(altitude15) - Integer.parseInt(altitude12)) / 30000);
+                altitude = (int) (temp * (curTime - 120000));
+                break;
+
+            case 4:
+                if(isWinter) {
+                    temp = Math.abs((Double.parseDouble(altitude15)) / (sunSet - 150000));
+                    altitude = (int) (temp * (sunSet - curTime));
+                } else {
+                    temp = Math.abs((Double.parseDouble(altitude18) - Integer.parseInt(altitude15)) / 30000);
+                    altitude = (int) (temp * (curTime - 150000));
+                }
+                break;
+
+            case 5:
+                temp = Math.abs(Double.parseDouble(altitude18)) / (sunSet - 180000);
+                altitude = (int) (temp * (curTime - 180000));
+                break;
+        }
+
+        return altitude;
     }
 }

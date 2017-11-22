@@ -35,6 +35,14 @@
         android:gravity="center"/>
 
     <TextView
+        android:id="@+id/tv_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="시간"
+        android:textSize="15dp"
+        android:gravity="center"/>
+
+    <TextView
         android:id="@+id/tv_latitude"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,26 +59,10 @@
         android:gravity="center"/>
 
     <TextView
-        android:id="@+id/tv_azimuth09"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="9시 방위각"
-        android:textSize="15dp"
-        android:gravity="center"/>
-
-    <TextView
         android:id="@+id/tv_altitude09"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="9시 고도"
-        android:textSize="15dp"
-        android:gravity="center"/>
-
-    <TextView
-        android:id="@+id/tv_azimuth12"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="12시 방위각"
         android:textSize="15dp"
         android:gravity="center"/>
 
@@ -83,26 +75,10 @@
         android:gravity="center"/>
 
     <TextView
-        android:id="@+id/tv_azimuth15"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="15시 방위각"
-        android:textSize="15dp"
-        android:gravity="center"/>
-
-    <TextView
         android:id="@+id/tv_altitude15"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="15시 고도"
-        android:textSize="15dp"
-        android:gravity="center"/>
-
-    <TextView
-        android:id="@+id/tv_azimuth18"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="18시 방위각"
         android:textSize="15dp"
         android:gravity="center"/>
 
@@ -115,10 +91,26 @@
         android:gravity="center"/>
 
     <TextView
-        android:id="@+id/tv_altitudeMeridian"
+        android:id="@+id/tv_altitude"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="남중고도"
+        android:text="현재고도"
+        android:textSize="15dp"
+        android:gravity="center"/>
+
+    <TextView
+        android:id="@+id/tv_sunRise"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="일출시간"
+        android:textSize="15dp"
+        android:gravity="center"/>
+
+    <TextView
+        android:id="@+id/tv_sunSet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="일몰시간"
         android:textSize="15dp"
         android:gravity="center"/>
 

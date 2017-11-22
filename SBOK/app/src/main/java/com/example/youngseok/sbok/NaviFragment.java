@@ -24,6 +24,7 @@ import com.skp.Tmap.TMapPOIItem;
 import com.skp.Tmap.TMapPoint;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class NaviFragment extends Fragment {
 
@@ -112,6 +113,8 @@ public class NaviFragment extends Fragment {
         tMapData = new TMapData();
         makeList();
 
+        tv_src.setText(MapFragment.curAddr);
+
         RecentBaseAdapter recentAdapter = new RecentBaseAdapter(thisContext, recentDestinationList);
         lv_poi.setAdapter(recentAdapter);
         lv_poi.setOnItemClickListener(recentAdapter);
@@ -157,8 +160,6 @@ public class NaviFragment extends Fragment {
                     } catch(Exception e) {
                         Log.d("DB Error", "Key value is already inserted");
                     }
-
-//                    Toast.makeText(thisContext, dstLat + " " + dstLon, Toast.LENGTH_SHORT).show();
 
                     Fragment fragment = new MapFragment();
                     getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, fragment).commit();
