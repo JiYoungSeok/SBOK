@@ -4,12 +4,18 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.icu.util.Calendar;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +42,14 @@ public class MapFragment extends Fragment {
     private static TMapPoint endPoint;
     private static Weather weather = new Weather();
 
+    private SensorManager mSensorManager = null;
+    private SensorEventListener mAccLis;
+    private Sensor mAccelometerSensor = null;
+
     private Context thisContext;
+
+    private SunAltitude sunAltitude;
+    private SunSet sunSet;
 
     private LocationManager locationManager;
 
@@ -51,6 +64,12 @@ public class MapFragment extends Fragment {
     public static String curAddr;
 
     private boolean isRun = true;
+    private boolean isInit = true;
+
+    private int year, month, date, convertDate;
+    private int hour, min, sec, convertTime;
+    private double angleXZ, angleYZ;
+    private double initAngle, realAngle;
 
     private final LocationListener mLocationListener = new LocationListener() {
         @Override
@@ -71,6 +90,25 @@ public class MapFragment extends Fragment {
         public void onProviderDisabled(String s) {
         }
     };
+
+    private class AccelometerListener implements SensorEventListener {
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+
+            double accX = event.values[0];
+            double accY = event.values[1];
+            double accZ = event.values[2];
+
+            angleXZ = Math.atan2(accX,  accZ) * 180/Math.PI;
+            angleYZ = Math.atan2(accY,  accZ) * 180/Math.PI;
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    }
 
     private void startLocationService () {
         locationManager = (LocationManager) thisContext.getSystemService(Context.LOCATION_SERVICE);
@@ -94,6 +132,28 @@ public class MapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_map, container, false);
         thisContext = container.getContext();
+
+        mSensorManager = (SensorManager) thisContext.getSystemService(Context.SENSOR_SERVICE);
+
+        //Using the Accelometer
+        mAccelometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mAccLis = new MapFragment.AccelometerListener();
+
+        sunAltitude = new SunAltitude();
+        sunSet = new SunSet();
+
+        Calendar today;
+        today = Calendar.getInstance();
+        year = today.get(Calendar.YEAR);
+        month = today.get(Calendar.MONTH);
+        date = today.get(Calendar.DAY_OF_MONTH);
+
+        hour = today.get(Calendar.HOUR_OF_DAY);
+        min = today.get(Calendar.MINUTE);
+        sec = today.get(Calendar.SECOND);
+
+        convertDate = year * 10000 + (month + 1) * 100 + date;
+        convertTime = hour * 10000 + min * 100 + sec;
 
         ll_tMap = view.findViewById(R.id.ll_tMap);
         bt_auto = view.findViewById(R.id.bt_auto);
@@ -196,7 +256,31 @@ public class MapFragment extends Fragment {
             public void run() {
                 while (isRun) {
                     try {
+                        mSensorManager.registerListener(mAccLis, mAccelometerSensor, SensorManager.SENSOR_DELAY_UI);
+
+                        sunAltitude.getAltitudeInfo(convertDate, curLat, curLon);
+                        sunSet.getInfo(curLat, curLon, convertDate);
                         weather.webData(curLat, curLon);
+
+                        if(isInit) {
+                            initAngle = angleYZ;
+                            realAngle = 0;
+                            isInit = false;
+                        } else {
+                            realAngle = angleYZ - initAngle;
+                        }
+
+                        Log.e("REAL ANGLE", "Real Angle : " + realAngle);
+
+                        int sunSetTime = Integer.parseInt(sunSet.getSunSet());
+                        int sunRiseTime = Integer.parseInt(sunSet.getSunRise());
+
+                        if(sunSetTime != 0 && sunRiseTime != 0) {
+                            Log.e("CURRENT_ALTITUDE", "현재고도 : " + sunAltitude.calcAltitude(sunRiseTime, sunSetTime, convertTime));
+                        }
+
+                        mSensorManager.unregisterListener(mAccLis);
+
                         Thread.sleep(2000);
                     } catch (Exception e) {
                         e.printStackTrace();
