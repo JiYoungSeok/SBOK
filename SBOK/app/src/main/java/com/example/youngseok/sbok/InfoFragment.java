@@ -189,13 +189,6 @@ public class InfoFragment extends Fragment {
 
             tv_XZ.setText("XZ축 기울기 : " + Double.toString(angleXZ));
             tv_YZ.setText("YZ축 기울기 : " + Double.toString(angleYZ));
-
-            Log.e("LOG", "ACCELOMETER           [X]:" + String.format("%.4f", event.values[0])
-                    + "           [Y]:" + String.format("%.4f", event.values[1])
-                    + "           [Z]:" + String.format("%.4f", event.values[2])
-                    + "           [angleXZ]: " + String.format("%.4f", angleXZ)
-                    + "           [angleYZ]: " + String.format("%.4f", angleYZ));
-
         }
 
         @Override

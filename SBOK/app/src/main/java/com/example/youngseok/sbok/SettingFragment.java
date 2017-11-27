@@ -55,27 +55,6 @@ public class SettingFragment extends Fragment {
         sb_level1.setProgress(level1);
         sb_level2.setProgress(level2);
 
-//        ViewTreeObserver vto = sb_level1.getViewTreeObserver();
-//        vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-//            public boolean onPreDraw() {
-//                Resources res = getResources();
-//                Drawable thumb = res.getDrawable(R.drawable.thumb);
-//                int h = (int)(sb_level1.getMeasuredHeight() * 1.5); // 8 * 1.5 = 12
-//                int w = h;
-//                Bitmap bmpOrg = ((BitmapDrawable)thumb).getBitmap();
-//                Bitmap bmpScaled = Bitmap.createScaledBitmap(bmpOrg, w, h, true);
-//                Drawable newThumb = new BitmapDrawable(res, bmpScaled);
-//                newThumb.setBounds(0, 0, newThumb.getIntrinsicWidth(), newThumb.getIntrinsicHeight());
-//                sb_level1.setThumb(newThumb);
-//                sb_level2.setThumb(newThumb);
-//
-//                sb_level1.getViewTreeObserver().removeOnPreDrawListener(this);
-//                sb_level2.getViewTreeObserver().removeOnPreDrawListener(this);
-//
-//                return true;
-//            }
-//        });
-
         sb_level1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {

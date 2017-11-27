@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class RecentDBManager extends SQLiteOpenHelper {
 
-    public RecentDBManager (Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+    public RecentDBManager(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super (context, name, factory, version);
     }
 

@@ -54,13 +54,6 @@ public class SunAltitude {
 
         startIndex = line.indexOf("<altitude_18>");
         altitude18 = line.substring(startIndex + 13, startIndex + 15);
-
-
-
-        Log.d("ALTITUDE09 : ", altitude09);
-        Log.d("ALTITUDE12 : ", altitude12);
-        Log.d("ALTITUDE15 : ", altitude15);
-        Log.d("ALTITUDE18 : ", altitude18);
     }
 
     public int calcAltitude(int sunRise, int sunSet, int curTime) {
@@ -79,40 +72,47 @@ public class SunAltitude {
         else if(150000 <= curTime && curTime < 180000 && !isWinter) section = 4;
         else if(180000 <= curTime && curTime < sunSet && !isWinter) section = 5;
 
-        Log.d("CALCULATE", curTime + " " + sunSet + " " + section + " " + isWinter);
+        int tempTime = (curTime / 10000) * 3600 + ((curTime % 10000) / 100) * 60 + curTime % 100;
+        curTime = tempTime;
+
+        tempTime = (sunRise / 10000) * 3600 + ((sunRise % 10000) / 100) * 60 + sunRise % 100;
+        sunRise = tempTime;
+
+        tempTime = (sunSet / 10000) * 3600 + ((sunSet % 10000) / 100) * 60 + sunSet % 100;
+        sunSet = tempTime;
 
         switch(section) {
             case 0:
                 break;
 
             case 1:
-                temp = Math.abs(Double.parseDouble(altitude09) / (90000 - sunRise));
+                temp = Double.parseDouble(altitude09) / (9 * 3600 - sunRise);
                 altitude = (int) (temp * (curTime - sunRise));
                 break;
 
             case 2:
-                temp = Math.abs((Double.parseDouble(altitude12) - Integer.parseInt(altitude09)) / 30000);
-                altitude = (int) (temp * (curTime - 90000));
+                temp = (Double.parseDouble(altitude12) - Integer.parseInt(altitude09)) / (3 * 3600);
+                altitude = (int) (temp * (curTime - 9 * 3600)) + Integer.parseInt(altitude09);
                 break;
 
             case 3:
-                temp = Math.abs((Double.parseDouble(altitude15) - Integer.parseInt(altitude12)) / 30000);
-                altitude = (int) (temp * (curTime - 120000));
+                temp = (Double.parseDouble(altitude15) - Integer.parseInt(altitude12)) / (3 * 3600);
+                altitude = (int) (temp * (curTime - 12 * 3600)) + Integer.parseInt(altitude12);
                 break;
 
             case 4:
                 if(isWinter) {
-                    temp = Math.abs((Double.parseDouble(altitude15)) / (sunSet - 150000));
-                    altitude = (int) (temp * (sunSet - curTime));
+                    temp = (Double.parseDouble(altitude15) / (sunSet - 15 * 3600));
+                    altitude = (int) (temp * (sunSet - curTime)) + Integer.parseInt(altitude15);
                 } else {
-                    temp = Math.abs((Double.parseDouble(altitude18) - Integer.parseInt(altitude15)) / 30000);
-                    altitude = (int) (temp * (curTime - 150000));
+                    temp = (Double.parseDouble(altitude18) - Integer.parseInt(altitude15)) / (3 * 3600);
+                    altitude = (int) (temp * (curTime - 15 * 3600)) + Integer.parseInt(altitude15);
                 }
                 break;
 
             case 5:
-                temp = Math.abs(Double.parseDouble(altitude18)) / (sunSet - 180000);
-                altitude = (int) (temp * (curTime - 180000));
+                temp = Double.parseDouble(altitude18) / (sunSet - 18 * 3600);
+                altitude = (int) (temp * (curTime - 18 * 3600)) + Integer.parseInt(altitude18);
                 break;
         }
 

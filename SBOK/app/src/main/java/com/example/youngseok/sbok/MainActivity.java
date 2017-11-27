@@ -55,8 +55,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             fragment = new NaviFragment();
         } else if (id == R.id.nav_setting) {
             fragment = new SettingFragment();
-        }else if (id == R.id.nav_info) {
-            fragment = new InfoFragment();
+        }else if (id == R.id.nav_demo) {
+            fragment = new DemoFragment();
         }
 
         if (fragment != null) {
