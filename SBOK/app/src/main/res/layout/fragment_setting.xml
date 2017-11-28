@@ -4,26 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!--<TextView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_weight="3"-->
-        <!--android:layout_marginLeft="30dp"-->
-        <!--android:gravity="center_vertical"-->
-        <!--android:textSize="20dp"-->
-        <!--android:textStyle="bold"-->
-        <!--android:textColor="#000000"-->
-        <!--android:text="설정"/>-->
-
-    <!--<View-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="1dp"-->
-        <!--android:background="#BDBDBD" />-->
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="4"
+        android:layout_weight="3"
         android:layout_marginLeft="20dp"
         android:gravity="center_vertical"
         android:textSize="18dp"
@@ -39,7 +23,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="4">
+        android:layout_weight="3">
 
         <TextView
             android:layout_width="match_parent"
@@ -76,7 +60,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="4">
+        android:layout_weight="3">
 
         <TextView
             android:layout_width="match_parent"
@@ -107,6 +91,23 @@
             android:textStyle="bold"
             android:textColor="#000000"
             android:text="50"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="3">
+
+        <Button
+            android:id="@+id/bt_apply"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="300dp"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:text="적용"/>
 
     </LinearLayout>
 
