@@ -4,12 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,26 +19,22 @@ import android.widget.TextView;
 import com.skp.Tmap.TMapData;
 import com.skp.Tmap.TMapMarkerItem;
 import com.skp.Tmap.TMapPoint;
-import com.skp.Tmap.TMapPolyLine;
 import com.skp.Tmap.TMapView;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 
 public class DemoMapFragment extends Fragment {
 
     private static String mApiKey = "e3ec92b4-d0be-396c-a3f6-1df217dec94a";
     private static TMapView tMapView;
     private static TMapData tMapData;
-    private static TMapPoint startPoint;
-    private static TMapPoint endPoint;
 
     private Queue<Demo> KookminQueue = new LinkedList<>();
+    private Stack<Demo> KookminStack = new Stack<>();
+    private Stack<Demo> KookminStack2 = new Stack<>();
     private DemoDBManager demoDBManager = null;
-
-    private SensorManager mSensorManager = null;
-    private SensorEventListener mAccLis;
-    private Sensor mAccelometerSensor = null;
 
     private Context thisContext;
 
@@ -52,31 +46,8 @@ public class DemoMapFragment extends Fragment {
     private String name, addr;
     private int weatherCode;
 
-
-    private boolean isRun = true;
-    private boolean isInit = true;
-
-    private double angleXZ, angleYZ;
-    private double initAngle, realAngle;
-
-    private class AccelometerListener implements SensorEventListener {
-
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-
-            double accX = event.values[0];
-            double accY = event.values[1];
-            double accZ = event.values[2];
-
-            angleXZ = Math.atan2(accX,  accZ) * 180/Math.PI;
-            angleYZ = Math.atan2(accY,  accZ) * 180/Math.PI;
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    }
+    private int count = 0;
+    private boolean flag = false;
 
     public DemoMapFragment() {
         //Basic Construction
@@ -98,7 +69,6 @@ public class DemoMapFragment extends Fragment {
 
         demoDBManager.demoKookmin(KookminQueue);
 
-//        drawPolyLine();
         startSubThreads();
 
         initMap();
@@ -110,30 +80,12 @@ public class DemoMapFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        isRun = false;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        isRun = false;
     }
-
-//    private void drawPolyLine() {
-//        if(NaviFragment.startLat != 0.0 && NaviFragment.startLon != 0.0
-//                && NaviFragment.dstLat != 0.0 && NaviFragment.dstLon != 0.0) {
-//            startPoint = new TMapPoint(NaviFragment.startLat, NaviFragment.startLon);
-//            endPoint = new TMapPoint(NaviFragment.dstLat, NaviFragment.dstLon);
-//
-//            tMapData.findPathData(startPoint, endPoint, new TMapData.FindPathDataListenerCallback() {
-//                @Override
-//                public void onFindPathData(TMapPolyLine tMapPolyLine) {
-//                    tMapPolyLine.setLineWidth(12);
-//                    tMapView.addTMapPath(tMapPolyLine);
-//                }
-//            });
-//        }
-//    }
 
     private void initMap() {
         double initLat, initLon;
@@ -172,32 +124,6 @@ public class DemoMapFragment extends Fragment {
 
     public void startSubThreads() {
         startAutoThread();
-
-        new Thread() {
-            public void run() {
-                while (isRun) {
-                    try {
-//                        mSensorManager.registerListener(mAccLis, mAccelometerSensor, SensorManager.SENSOR_DELAY_UI);
-
-                        if(isInit) {
-                            initAngle = angleYZ;
-                            realAngle = 0;
-                            isInit = false;
-                        } else {
-                            realAngle = angleYZ - initAngle;
-                        }
-
-                        Log.e("REAL ANGLE", "Real Angle : " + realAngle);
-
-//                        mSensorManager.unregisterListener(mAccLis);
-
-                        Thread.sleep(1000);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
     }
 
     android.os.Handler mainHandler = new android.os.Handler() {
@@ -229,22 +155,57 @@ public class DemoMapFragment extends Fragment {
         @Override
         public void run() {
 
-            while(!KookminQueue.isEmpty()) {
+            while(true) {
                 Message msg = Message.obtain();
                 mainHandler.sendMessage(msg);
 
                 try {
-                    name = KookminQueue.peek().getName();
-                    lat = KookminQueue.peek().getLatitude();
-                    lon = KookminQueue.peek().getLongitude();
-                    weatherCode = KookminQueue.peek().getWeather();
 
-                    KookminQueue.remove();
+                    if(!flag) {
+                        name = KookminQueue.peek().getName();
+                        lat = KookminQueue.peek().getLatitude();
+                        lon = KookminQueue.peek().getLongitude();
+                        weatherCode = KookminQueue.peek().getWeather();
+
+                        KookminQueue.remove();
+                        KookminStack.push(new Demo(name, lat, lon, weatherCode));
+
+                        if(KookminQueue.isEmpty()) {
+                            flag = true;
+                        }
+                    } else if(flag && count % 2 == 0) {
+                        name = KookminStack.peek().getName();
+                        lat = KookminStack.peek().getLatitude();
+                        lon = KookminStack.peek().getLongitude();
+                        weatherCode = KookminStack.peek().getWeather();
+
+                        KookminStack.pop();
+                        KookminStack2.push(new Demo(name, lat, lon, weatherCode));
+
+                        if(KookminStack.isEmpty()) {
+                            count++;
+                        }
+                    } else if(flag && count % 2 != 0) {
+                        name = KookminStack2.peek().getName();
+                        lat = KookminStack2.peek().getLatitude();
+                        lon = KookminStack2.peek().getLongitude();
+                        weatherCode = KookminStack2.peek().getWeather();
+
+                        KookminStack2.pop();
+                        KookminStack.push(new Demo(name, lat, lon, weatherCode));
+
+                        if(KookminStack2.isEmpty()) {
+                            count++;
+                        }
+                    }
+
+//                    MapFragment.mConnectedThread.write("c/1/" + level1 + "/2/" + level2 + ";");
 
                     Thread.sleep(1000);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
+
             }
         }
     }

@@ -1,9 +1,14 @@
 package com.example.youngseok.sbok;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,7 +17,9 @@ import android.icu.util.Calendar;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
@@ -25,6 +32,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.skp.Tmap.TMapData;
 import com.skp.Tmap.TMapMarkerItem;
@@ -32,8 +40,17 @@ import com.skp.Tmap.TMapPoint;
 import com.skp.Tmap.TMapPolyLine;
 import com.skp.Tmap.TMapView;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.util.UUID;
+
 public class MapFragment extends Fragment {
-//     implements TMapGpsManager.onLocationChangedCallback
+
+    public static int flag = 0;
+
+    private static final String TAG = "BLUETOOTH";
 
     private static String mApiKey = "e3ec92b4-d0be-396c-a3f6-1df217dec94a";
     private static TMapView tMapView;
@@ -42,9 +59,17 @@ public class MapFragment extends Fragment {
     private static TMapPoint endPoint;
     private static Weather weather = new Weather();
 
+    final int RECIEVE_MESSAGE = 1;
+    private BluetoothAdapter btAdapter = null;
+    private BluetoothSocket btSocket = null;
+    private StringBuilder sb = new StringBuilder();
+    public static ConnectedThread mConnectedThread;
+
     private SensorManager mSensorManager = null;
     private SensorEventListener mAccLis;
     private Sensor mAccelometerSensor = null;
+
+    Handler h;
 
     private Context thisContext;
 
@@ -55,7 +80,7 @@ public class MapFragment extends Fragment {
 
     private FrameLayout ll_tMap;
     private ImageButton bt_auto;
-    private TextView tv_curAddr;
+    private TextView tv_curAddr, tv_sunWarning;
     private ImageView iv_curWeather;
 
     public static double curLat;
@@ -69,7 +94,13 @@ public class MapFragment extends Fragment {
     private int year, month, date, convertDate;
     private int hour, min, sec, convertTime;
     private double angleXZ, angleYZ;
-    private double initAngle, realAngle;
+    private double initAngle, realAngle, betweenAngle;
+
+    private int count = 0;
+
+    private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    private static String address = "00:15:83:35:5B:06";
 
     private final LocationListener mLocationListener = new LocationListener() {
         @Override
@@ -133,6 +164,9 @@ public class MapFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_map, container, false);
         thisContext = container.getContext();
 
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        checkBTState();
+
         mSensorManager = (SensorManager) thisContext.getSystemService(Context.SENSOR_SERVICE);
 
         //Using the Accelometer
@@ -158,6 +192,7 @@ public class MapFragment extends Fragment {
         ll_tMap = view.findViewById(R.id.ll_tMap);
         bt_auto = view.findViewById(R.id.bt_auto);
         tv_curAddr = view.findViewById(R.id.tv_curAddr);
+        tv_sunWarning = view.findViewById(R.id.tv_sunWarning);
         iv_curWeather = view.findViewById(R.id.iv_curWeather);
 
         tMapView = new TMapView(thisContext);
@@ -187,6 +222,48 @@ public class MapFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        Log.d(TAG, "...onResume - try connect...");
+
+        if(flag == 0) {
+            BluetoothDevice device = btAdapter.getRemoteDevice(address);
+
+            try {
+                btSocket = createBluetoothSocket(device);
+            } catch (IOException e) {
+                errorExit("Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".");
+            }
+
+            btAdapter.cancelDiscovery();
+
+            Log.d(TAG, "...Connecting...");
+            try {
+                btSocket.connect();
+                Log.d(TAG, "....Connection ok...");
+            } catch (IOException e) {
+                try {
+                    btSocket.close();
+                } catch (IOException e2) {
+                    errorExit("Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
+                }
+            }
+
+            Log.d(TAG, "...Create Socket...");
+
+            mConnectedThread = new MapFragment.ConnectedThread(btSocket);
+            mConnectedThread.start();
+            flag = 1;
+        }
+    }
+
+    private void errorExit(String title, String message){
+        Toast.makeText(getContext(), title + " - " + message, Toast.LENGTH_LONG).show();
+        getActivity().finish();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         isRun = false;
@@ -196,6 +273,8 @@ public class MapFragment extends Fragment {
     public void onPause() {
         super.onPause();
         isRun = false;
+
+        Log.d(TAG, "...In onPause()...");
     }
 
     private void drawPolyLine() {
@@ -263,25 +342,43 @@ public class MapFragment extends Fragment {
                         weather.webData(curLat, curLon);
 
                         if(isInit) {
-                            initAngle = angleYZ;
                             realAngle = 0;
-                            isInit = false;
+
+                            count++;
+
+                            if(count == 10) {
+                                initAngle = angleYZ;
+                                isInit = false;
+                            }
+                            Log.e("INIT ANGLE", "Init Angle : " + initAngle);
                         } else {
                             realAngle = angleYZ - initAngle;
                         }
 
+                        Log.e("ANGLE YZ", "Angle YZ : " + angleYZ);
+                        Log.e("INIT ANGLE", "Init Angle : " + initAngle);
                         Log.e("REAL ANGLE", "Real Angle : " + realAngle);
+
+                        betweenAngle = 100;
 
                         int sunSetTime = Integer.parseInt(sunSet.getSunSet());
                         int sunRiseTime = Integer.parseInt(sunSet.getSunRise());
 
                         if(sunSetTime != 0 && sunRiseTime != 0) {
+                            betweenAngle = sunAltitude.calcAltitude(sunRiseTime, sunSetTime, convertTime) - realAngle;
+                            Log.e("BETWEEN ANGLE", "between angle : " + betweenAngle);
                             Log.e("CURRENT_ALTITUDE", "현재고도 : " + sunAltitude.calcAltitude(sunRiseTime, sunSetTime, convertTime));
                         }
 
                         mSensorManager.unregisterListener(mAccLis);
 
-                        Thread.sleep(2000);
+                        if(betweenAngle < 15 && weather.getCurWeather() == 0) {
+                            mConnectedThread.write("s/1;");
+                        } else {
+                            mConnectedThread.write("s/0;");
+                        }
+
+                        Thread.sleep(1000);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -303,6 +400,28 @@ public class MapFragment extends Fragment {
             });
 
             tv_curAddr.setText(curAddr);
+
+            Log.e("WARNING", betweenAngle + " " + weather.getCurWeather());
+            if(Integer.parseInt(sunSet.getSunRise()) < convertTime && convertTime < Integer.parseInt(sunSet.getSunSet()) &&
+                    0 < betweenAngle && betweenAngle < 15 &&
+                    weather.getCurWeather() == 0) {
+
+                tv_sunWarning.setText("위험");
+                tv_sunWarning.setTextColor(Color.parseColor("#FF0000"));
+                Log.e("TEST1", "aaa");
+            } else if((betweenAngle < 0 || betweenAngle > 15)) {
+                tv_sunWarning.setText("보통");
+                tv_sunWarning.setTextColor(Color.parseColor("#00FF00"));
+                Log.e("TEST2", "aaa");
+            } else if(weather.getCurWeather() != 0) {
+                tv_sunWarning.setText("보통");
+                tv_sunWarning.setTextColor(Color.parseColor("#00FF00"));
+                Log.e("TEST3", "aaa");
+            } else if(convertTime < Integer.parseInt(sunSet.getSunRise()) || convertTime > Integer.parseInt(sunSet.getSunSet())) {
+                tv_sunWarning.setText("보통");
+                tv_sunWarning.setTextColor(Color.parseColor("#00FF00"));
+                Log.e("TEST4", "aaa");
+            }
 
             switch(weather.getCurWeather()) {
                 case 0: iv_curWeather.setImageResource(R.drawable.sunny); break;
@@ -329,6 +448,73 @@ public class MapFragment extends Fragment {
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+        if(Build.VERSION.SDK_INT >= 10){
+            try {
+                final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", new Class[] { UUID.class });
+                return (BluetoothSocket) m.invoke(device, MY_UUID);
+            } catch (Exception e) {
+                Log.e(TAG, "Could not create Insecure RFComm Connection",e);
+            }
+        }
+        return  device.createRfcommSocketToServiceRecord(MY_UUID);
+    }
+
+    private void checkBTState() {
+        if(btAdapter==null) {
+            errorExit("Fatal Error", "Bluetooth not support");
+        } else {
+            if (btAdapter.isEnabled()) {
+                Log.d(TAG, "...Bluetooth ON...");
+            } else {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+            }
+        }
+    }
+
+    public class ConnectedThread extends Thread {
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ConnectedThread(BluetoothSocket socket) {
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+
+            try {
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
+            } catch (IOException e) { }
+
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run() {
+            byte[] buffer = new byte[256];
+            int bytes;
+
+            while (true) {
+                try {
+                    bytes = mmInStream.read(buffer);
+                    h.obtainMessage(RECIEVE_MESSAGE, bytes, -1, buffer).sendToTarget();
+                } catch (IOException e) {
+                    break;
+                }
+            }
+        }
+
+        public void write(String message) {
+            Log.d(TAG, "...Data to send: " + message + "...");
+            byte[] msgBuffer = message.getBytes();
+            try {
+                mmOutStream.write(msgBuffer);
+            } catch (IOException e) {
+                Log.d(TAG, "...Error data send: " + e.getMessage() + "...");
             }
         }
     }

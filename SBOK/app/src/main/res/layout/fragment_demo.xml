@@ -7,7 +7,7 @@
         android:id="@+id/bt_kookmin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Kookmin Univ"/>
+        android:text="Pangyo Station -> Continental"/>
 
     <Button
         android:id="@+id/bt_dbInit"

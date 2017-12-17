@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_setting) {
             fragment = new SettingFragment();
         }else if (id == R.id.nav_demo) {
-            fragment = new DemoFragment();
+            fragment = new DemoMapFragment();
         }
 
         if (fragment != null) {
