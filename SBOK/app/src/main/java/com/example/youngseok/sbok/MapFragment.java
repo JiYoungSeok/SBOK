@@ -401,26 +401,20 @@ public class MapFragment extends Fragment {
 
             tv_curAddr.setText(curAddr);
 
-            Log.e("WARNING", betweenAngle + " " + weather.getCurWeather());
             if(Integer.parseInt(sunSet.getSunRise()) < convertTime && convertTime < Integer.parseInt(sunSet.getSunSet()) &&
                     0 < betweenAngle && betweenAngle < 15 &&
                     weather.getCurWeather() == 0) {
-
                 tv_sunWarning.setText("위험");
                 tv_sunWarning.setTextColor(Color.parseColor("#FF0000"));
-                Log.e("TEST1", "aaa");
             } else if((betweenAngle < 0 || betweenAngle > 15)) {
                 tv_sunWarning.setText("보통");
                 tv_sunWarning.setTextColor(Color.parseColor("#00FF00"));
-                Log.e("TEST2", "aaa");
             } else if(weather.getCurWeather() != 0) {
                 tv_sunWarning.setText("보통");
                 tv_sunWarning.setTextColor(Color.parseColor("#00FF00"));
-                Log.e("TEST3", "aaa");
             } else if(convertTime < Integer.parseInt(sunSet.getSunRise()) || convertTime > Integer.parseInt(sunSet.getSunSet())) {
                 tv_sunWarning.setText("보통");
                 tv_sunWarning.setTextColor(Color.parseColor("#00FF00"));
-                Log.e("TEST4", "aaa");
             }
 
             switch(weather.getCurWeather()) {

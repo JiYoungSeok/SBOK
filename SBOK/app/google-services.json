@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "127737546199",
+    "firebase_url": "https://continental-dcaf2.firebaseio.com",
+    "project_id": "continental-dcaf2",
+    "storage_bucket": "continental-dcaf2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:127737546199:android:4bdeac040f57a075",
+        "android_client_info": {
+          "package_name": "com.example.youngseok.sbok"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "127737546199-ousbf110ib76dtbnt7jh52ogq8ok3rm6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.youngseok.sbok",
+            "certificate_hash": "7fddef0835f541b036ae0cd3c9939e97adf809dd"
+          }
+        },
+        {
+          "client_id": "127737546199-fr8vm8sumbjb068itsho0jgmo2a20p0i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoI6aW0aELYX_pM7YkqSChnNHrYdjZ9Mw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "127737546199-fr8vm8sumbjb068itsho0jgmo2a20p0i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -3,11 +3,10 @@ package com.example.youngseok.sbok;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.hardware.Sensor;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +15,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.skp.Tmap.TMapData;
 import com.skp.Tmap.TMapMarkerItem;
 import com.skp.Tmap.TMapPoint;
@@ -26,6 +30,9 @@ import java.util.Queue;
 import java.util.Stack;
 
 public class DemoMapFragment extends Fragment {
+
+    DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+    DatabaseReference mConditionRef = mDatabase.child("State");
 
     private static String mApiKey = "e3ec92b4-d0be-396c-a3f6-1df217dec94a";
     private static TMapView tMapView;
@@ -39,7 +46,7 @@ public class DemoMapFragment extends Fragment {
     private Context thisContext;
 
     private FrameLayout ll_tMap;
-    private TextView tv_curAddr;
+    private TextView tv_curAddr, tv_sunWarning;
     private ImageView iv_curWeather;
 
     private double lat, lon;
@@ -48,6 +55,8 @@ public class DemoMapFragment extends Fragment {
 
     private int count = 0;
     private boolean flag = false;
+
+    private long state;
 
     public DemoMapFragment() {
         //Basic Construction
@@ -62,6 +71,7 @@ public class DemoMapFragment extends Fragment {
 
         ll_tMap = view.findViewById(R.id.ll_tMap);
         tv_curAddr = view.findViewById(R.id.tv_curAddr);
+        tv_sunWarning = view.findViewById(R.id.tv_sunWarning);
         iv_curWeather = view.findViewById(R.id.iv_curWeather);
 
         tMapView = new TMapView(thisContext);
@@ -73,6 +83,19 @@ public class DemoMapFragment extends Fragment {
 
         initMap();
         ll_tMap.addView(tMapView);
+
+        mConditionRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                state = dataSnapshot.getValue(Long.class);
+                Log.e("STATE", Long.toString(state));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         return view;
     }
@@ -199,7 +222,16 @@ public class DemoMapFragment extends Fragment {
                         }
                     }
 
-//                    MapFragment.mConnectedThread.write("c/1/" + level1 + "/2/" + level2 + ";");
+                    if(state == 0) {
+                        tv_sunWarning.setText("보통");
+                        tv_sunWarning.setTextColor(Color.parseColor("#00FF00"));
+                        MapFragment.mConnectedThread.write("s/0");
+                    } else if(state == 1) {
+                        tv_sunWarning.setText("위험");
+                        tv_sunWarning.setTextColor(Color.parseColor("#FF0000"));
+                        MapFragment.mConnectedThread.write("s/1");
+
+                    }
 
                     Thread.sleep(1000);
                 } catch (Exception e) {
